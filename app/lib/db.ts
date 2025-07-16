@@ -1,20 +1,15 @@
+
 import mongoose from "mongoose";
-
-const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI!;
-console.log("MONGODB_URI", MONGODB_URI);
-
+const MONGODB_URI = process.env.MONGODB_URI!;
+console.log("MONGODB_URI", process.env.MONGODB_URI);
 console.log("NEXTAUTH_SECRET", process.env.NEXTAUTH_SECRET);
-
 if (!MONGODB_URI) {
   throw new Error("Please define mongo_uri in env variables");
 }
-
 let cached = global.mongoose;
-
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
-
 export async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
