@@ -17,125 +17,6 @@ type MediaItem = {
   description: string
 }
 
-// Custom Media Hover Effect Component
-const MediaHoverEffect = ({
-  mediaItems,
-  onMediaClick,
-  onReplace,
-  onRemove,
-}: {
-  mediaItems: MediaItem[]
-  onMediaClick: (media: MediaItem) => void
-  onReplace: (index: number) => void
-  onRemove: (index: number) => void
-}) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-10">
-      {mediaItems.map((media, idx) => (
-        <div
-          key={idx}
-          className="relative group block p-2 h-full w-full"
-          onMouseEnter={() => setHoveredIndex(idx)}
-          onMouseLeave={() => setHoveredIndex(null)}
-        >
-          {/* Hover Background Effect */}
-          <div
-            className={`absolute inset-0 h-full w-full bg-white/5 backdrop-blur-md rounded-3xl transition-opacity duration-300 ${
-              hoveredIndex === idx ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-          
-          {/* Media Card */}
-          <div className="rounded-2xl h-full w-full p-4 overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 hover:border-white/40 relative z-20 transition-all duration-300">
-            <div className="relative z-50">
-              {/* Media Content */}
-              <div className="mb-3 relative">
-                {media.type === "image" ? (
-                  <div className="relative">
-                    <img 
-                      src={media.url} 
-                      alt={media.title} 
-                      className="w-full h-48 object-cover rounded cursor-pointer shadow-lg transition-transform duration-300 group-hover:scale-105" 
-                      onClick={() => onMediaClick(media)}
-                    />
-                    {/* Full screen icon */}
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="bg-white/90 text-black hover:bg-white p-1 h-8 w-8 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onMediaClick(media)
-                        }}
-                      >
-                        <Maximize2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <video 
-                      src={media.url} 
-                      controls 
-                      className="w-full h-48 rounded shadow-lg transition-transform duration-300 group-hover:scale-105"
-                    />
-                    {/* Full screen icon */}
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="bg-white/90 text-black hover:bg-white p-1 h-8 w-8 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                        onClick={() => onMediaClick(media)}
-                      >
-                        <Maximize2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Action buttons - positioned at bottom left on hover */}
-                <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 flex space-x-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/90 text-black hover:bg-white h-8 px-2 shadow-lg backdrop-blur-sm"
-                    onClick={() => onReplace(idx)}
-                  >
-                    <Edit3 className="w-3 h-3 mr-1" />
-                    Replace
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="bg-red-500 text-white hover:bg-red-600 border-red-500 h-8 px-2 shadow-lg"
-                    onClick={() => onRemove(idx)}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Remove
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Title and Description */}
-              <div className="p-2">
-                <h4 className="text-white font-bold tracking-wide text-lg mb-2 line-clamp-1 transition-colors duration-300 group-hover:text-blue-300">
-                  {media.title}
-                </h4>
-                <p className="text-gray-300 tracking-wide leading-relaxed text-sm line-clamp-3 transition-colors duration-300 group-hover:text-gray-200">
-                  {media.description}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export default function Home() {
   const [uploadedMedia, setUploadedMedia] = useState<string | null>(null)
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null)
@@ -237,7 +118,7 @@ export default function Home() {
         <Galaxy 
           mouseRepulsion={true}
           mouseInteraction={true}
-          density={1.5}
+          density={1}
           glowIntensity={0.3}
           saturation={0}
           hueShift={240}
@@ -300,7 +181,7 @@ export default function Home() {
 
         {/* Main Content */}
         <main className="container mx-auto px-6 py-16">
-          {/* Uploaded Media List with Custom Hover Effect */}
+          {/* Uploaded Media List at the Top - Grid Layout with Dynamic Title */}
           {mediaList.length > 0 && (
             <div className="mb-12">
               <TextType 
@@ -319,14 +200,83 @@ export default function Home() {
                 cursorCharacter="_"
                 cursorClassName="text-blue-400"
               />
-              
-              {/* Using Custom Media Hover Effect */}
-              <MediaHoverEffect 
-                mediaItems={mediaList}
-                onMediaClick={handleMediaClick}
-                onReplace={handleReplaceFileClick}
-                onRemove={handleRemoveItem}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mediaList.map((media, idx) => (
+                  <Card key={idx} className="shadow-2xl hover:shadow-3xl transition-all duration-300 group bg-white/10 backdrop-blur-md border-white/20">
+                    <CardContent className="p-4">
+                      <div className="mb-3 relative">
+                        {media.type === "image" ? (
+                          <div className="relative">
+                            <img 
+                              src={media.url} 
+                              alt={media.title} 
+                              className="w-full h-48 object-cover rounded cursor-pointer shadow-lg" 
+                              onClick={() => handleMediaClick(media)}
+                            />
+                            {/* Full screen icon - always visible on images */}
+                            <div className="absolute top-2 right-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white/90 text-black hover:bg-white p-1 h-8 w-8 shadow-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleMediaClick(media)
+                                }}
+                              >
+                                <Maximize2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <video 
+                              src={media.url} 
+                              controls 
+                              className="w-full h-48 rounded shadow-lg"
+                            />
+                            {/* Full screen icon for videos */}
+                            <div className="absolute top-2 right-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white/90 text-black hover:bg-white p-1 h-8 w-8 shadow-lg"
+                                onClick={() => handleMediaClick(media)}
+                              >
+                                <Maximize2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Action buttons - positioned at bottom left on hover */}
+                        <div className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-white/90 text-black hover:bg-white h-8 px-2 shadow-lg backdrop-blur-sm"
+                            onClick={() => handleReplaceFileClick(idx)}
+                          >
+                            <Edit3 className="w-3 h-3 mr-1" />
+                            Replace
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-red-500 text-white hover:bg-red-600 border-red-500 h-8 px-2 shadow-lg"
+                            onClick={() => handleRemoveItem(idx)}
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2 line-clamp-1 text-white">{media.title}</h3>
+                      <p className="text-gray-300 text-sm line-clamp-3">{media.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
 
