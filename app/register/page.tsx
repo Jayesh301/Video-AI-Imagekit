@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { Button } from '../components/button'
 import { Card, CardContent } from '../components/card'
-import { UserPlus, Home } from 'lucide-react'
+import { UserPlus, Home, Loader2 } from 'lucide-react'
+import { signIn } from 'next-auth/react'
 
 function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -13,38 +14,62 @@ function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setLoading(true)
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
+      setLoading(false)
       return
     }
 
     try {
-      const res = await fetch('/api/register', {
+      console.log('Sending registration request to /api/auth/register')
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email, password })
       })
+      
       const data = await res.json()
+      console.log('Registration response:', { status: res.status, data })
 
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed')
+        throw new Error(data.error || data.message || 'Registration failed')
       }
 
-      setSuccess('Account created successfully! Redirecting to login...')
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      setSuccess('Account created successfully! Signing you in...')
+      
+      // Automatically sign in after successful registration
+      const signInResult = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (signInResult?.error) {
+        console.error('Auto sign-in failed:', signInResult.error)
+        setSuccess('Account created successfully! Redirecting to login...')
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+      } else {
+        // Successful sign-in, redirect to home page
+        router.push('/')
+      }
     } catch (error) {
+      console.error('Registration error:', error)
       setError(error instanceof Error ? error.message : 'Registration failed')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -118,6 +143,7 @@ function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -133,6 +159,7 @@ function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -148,11 +175,23 @@ function RegisterPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                     required
+                    disabled={loading}
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-black hover:bg-gray-800 py-3">
-                  Create Account
+                <Button 
+                  type="submit" 
+                  className="w-full bg-black hover:bg-gray-800 py-3"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Account...
+                    </span>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               </form>
 

@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react"
 import { ImageKitProvider } from "@imagekit/next"
 
+
 const urlEndpoint = process.env.NEXT_PUBLIC_URL_ENDPOINT
 
 

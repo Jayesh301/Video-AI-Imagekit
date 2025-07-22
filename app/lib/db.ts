@@ -10,7 +10,7 @@ let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
-export async function connectToDatabase() {
+export async function connectToDataBase() {
   if (cached.conn) {
     return cached.conn;
   }
@@ -21,7 +21,7 @@ export async function connectToDatabase() {
       maxPoolSize: 10,
     };
 
-    mongoose.connect(MONGODB_URI, opts).then(() => mongoose.connection);
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then(() => mongoose.connection);
   }
 
   try {

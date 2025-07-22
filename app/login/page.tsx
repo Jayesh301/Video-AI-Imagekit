@@ -6,26 +6,43 @@ import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '../components/button'
 import { Card, CardContent } from '../components/card'
-import { LogIn, Home } from 'lucide-react'
+import { LogIn, Home, Loader2 } from 'lucide-react'
 
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setLoading(true)
+    setError('')
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    })
+    try {
+      console.log('Attempting to sign in with email:', email)
+      const result = await signIn('credentials', {
+        email: email.toLowerCase().trim(),
+        password,
+        redirect: false,
+      })
 
-    if (result?.error) {
-      console.log(result.error)
-    } else {
-      router.push('/')
+      console.log('Sign in result:', result)
+
+      if (result?.error) {
+        setError(result.error)
+        console.log('Sign in error:', result.error)
+      } else {
+        // Successful login, redirect to home page
+        console.log('Sign in successful, redirecting to home page')
+        router.push('/')
+      }
+    } catch (err) {
+      console.error('Unexpected sign in error:', err)
+      setError('An unexpected error occurred')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -74,6 +91,12 @@ function LoginPage() {
                 <p className="text-gray-600">Enter your credentials to access your account</p>
               </div>
 
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -87,6 +110,7 @@ function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -102,23 +126,32 @@ function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                     required
+                    disabled={loading}
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-black hover:bg-gray-800 py-3">
-                  Sign In
+                <Button 
+                  type="submit" 
+                  className="w-full bg-black hover:bg-gray-800 py-3"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Signing in...
+                    </span>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
               </form>
 
               <div className="mt-8 text-center">
                 <p className="text-gray-600">
                   Don't have an account?{' '}
-                  <button
-                    onClick={() => router.push('/register')}
-                    className="text-black hover:underline font-medium"
-                  >
+                  <Link href="/register" className="text-black hover:underline font-medium">
                     Create one here
-                  </button>
+                  </Link>
                 </p>
               </div>
             </CardContent>
